@@ -38,19 +38,19 @@ const dictionary = {
     "NOW_TIME": {
         "zh-Hant": "現在時間",
         "zh-Hans": "现在时间",
-        "kr": "Current Time",
+        "kr": "현재시각",
         "ja": "현재시각"
     },
     "START_TIME": {
         "zh-Hant": "開始時間",
         "zh-Hans": "开始时间",
-        "kr": "이벤트 시작 시간",
+        "kr": "시작 시각",
         "ja": "시작시각"
     },
     "END_TIME": {
         "zh-Hant": "結束時間",
         "zh-Hans": "结束时间",
-        "kr": "이벤트 종료 시간",
+        "kr": "종료 시각",
         "ja": "종료시각"
     },
     "NOW_SCORE": {
