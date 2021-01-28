@@ -292,7 +292,7 @@ function calcMusic(parameters, verbose) {
             }
         }
 
-        dias = (bpNeeded - bp) * 2;
+        dias = (bpNeeded - bp) * 20;
         returnVerbose.bpNeeded = bpNeeded;
         returnVerbose.eventSongTimes = eventSongTimes;
         returnVerbose.normalSongTimes = normalSongTimes;
@@ -354,7 +354,7 @@ function calcMusic(parameters, verbose) {
             }
         }
         
-        dias = (bpNeeded - bp) * 2;
+        dias = (bpNeeded - bp) * 20;
         returnVerbose.bpNeeded = bpNeeded;
         returnVerbose.setlistTimes = setlistTimes;
     }
