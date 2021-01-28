@@ -236,7 +236,7 @@ const dictionary = {
     "BONUS_EXTRA": {
         "zh-Hant": "特殊 (哨子×121)",
         "zh-Hans": "特殊 (哨子×121)",
-        "kr": "특별 (Whistle x121)",
+        "kr": "특별 ( x121)",
         "ja": "特殊 (ホイッスル×121)"
     },
     "BONUS_HALF_ANNIV": {
