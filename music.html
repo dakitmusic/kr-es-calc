@@ -1,16 +1,6 @@
-
 <html>
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="css/main.css">
-        <script src="js/Globals.js"></script>
-        <script src="js/calc.js"></script>
-	<style>
+        <style>
 body {
     background-color: #2d2d2d;
 }
@@ -39,496 +29,409 @@ body {
                         color: red;
                         background-color: #4d4d4d;
                 }
-	</style>
+        </style>
     </head>
-    <body>
+
+<script>
+/* sortingNumber() : 숫자인 실수만으로 되어있을 때, 적용될 함수 */ 
+
+function sortingNumber( a , b ){  
+
+        if ( typeof a == "number" && typeof b == "number" ) return a - b; 
+
+        // 천단위 쉼표와 공백문자만 삭제하기.  
+        var a = ( a + "" ).replace( /[,\s\xA0]+/g , "" ); 
+        var b = ( b + "" ).replace( /[,\s\xA0]+/g , "" ); 
+
+        var numA = parseFloat( a ) + ""; 
+        var numB = parseFloat( b ) + ""; 
+
+        if ( numA == "NaN" || numB == "NaN" || a != numA || b != numB ) return false; 
+
+        return parseFloat( a ) - parseFloat( b ); 
+} 
+
+
+/* changeForSorting() : 문자열 바꾸기. */ 
+
+function changeForSorting( first , second ){  
+
+        // 문자열의 복사본 만들기. 
+        var a = first.toString().replace( /[\s\xA0]+/g , " " ); 
+        var b = second.toString().replace( /[\s\xA0]+/g , " " ); 
+
+        var change = { first : a, second : b }; 
+
+        if ( a.search( /\d/ ) < 0 || b.search( /\d/ ) < 0 || a.length == 0 || b.length == 0 ) return change; 
+
+        var regExp = /(\d),(\d)/g; // 천단위 쉼표를 찾기 위한 정규식. 
+
+        a = a.replace( regExp , "$1" + "$2" ); 
+        b = b.replace( regExp , "$1" + "$2" ); 
+
+        var unit = 0; 
+        var aNb = a + " " + b; 
+        var numbers = aNb.match( /\d+/g ); // 문자열에 들어있는 숫자 찾기 
+
+        for ( var x = 0; x < numbers.length; x++ ){ 
+
+                var length = numbers[ x ].length; 
+                if ( unit < length ) unit = length; 
+        } 
+
+        var addZero = function( string ){ // 숫자들의 단위 맞추기 
+
+                var match = string.match( /^0+/ ); 
+
+                if ( string.length == unit ) return ( match == null ) ? string : match + string; 
+
+                var zero = "0"; 
+
+                for ( var x = string.length; x < unit; x++ ) string = zero + string; 
+
+                return ( match == null ) ? string : match + string; 
+        }; 
+
+        change.first = a.replace( /\d+/g, addZero ); 
+        change.second = b.replace( /\d+/g, addZero ); 
+
+        return change; 
+} 
+
+
+/* byLocale() */ 
+
+function byLocale(){ 
+
+        var compare = function( a , b ){ 
+
+                var sorting = sortingNumber( a , b ); 
+
+                if ( typeof sorting == "number" ) return sorting; 
+
+                var change = changeForSorting( a , b ); 
+
+                var a = change.first; 
+                var b = change.second; 
+
+                return a.localeCompare( b ); 
+        }; 
+
+        var ascendingOrder = function( a , b ){  return compare( a , b );  }; 
+        var descendingOrder = function( a , b ){  return compare( b , a );  }; 
+
+        return { ascending : ascendingOrder, descending : descendingOrder }; 
+} 
+
+
+/* replacement() */ 
+ 
+function replacement( parent ){  
+        var tagName = parent.tagName.toLowerCase(); 
+        if ( tagName == "table" ) parent = parent.tBodies[ 0 ]; 
+        tagName = parent.tagName.toLowerCase(); 
+        if ( tagName == "tbody" ) var children = parent.rows; 
+        else var children = parent.getElementsByTagName( "li" ); 
+
+        var replace = { 
+                order : byLocale(), 
+                index : false, 
+                array : function(){ 
+                        var array = [ ]; 
+                        for ( var x = 0; x < children.length; x++ ) array[ x ] = children[ x ]; 
+                        return array; 
+                }(), 
+                checkIndex : function( index ){ 
+                        if ( index ) this.index = parseInt( index, 10 ); 
+                        var tagName = parent.tagName.toLowerCase(); 
+                        if ( tagName == "tbody" && ! index ) this.index = 0; 
+                }, 
+                getText : function( child ){ 
+                        if ( this.index ) child = child.cells[ this.index ]; 
+                        return getTextByClone( child ); 
+                }, 
+                setChildren : function(){ 
+                        var array = this.array; 
+                        while ( parent.hasChildNodes() ) parent.removeChild( parent.firstChild ); 
+                        for ( var x = 0; x < array.length; x++ ) parent.appendChild( array[ x ] ); 
+                }, 
+                ascending : function( index ){ // 오름차순 
+                        this.checkIndex( index ); 
+                        var _self = this; 
+                        var order = this.order; 
+                        var ascending = function( a, b ){ 
+                                var a = _self.getText( a ); 
+                                var b = _self.getText( b ); 
+                                return order.ascending( a, b ); 
+                        }; 
+                        this.array.sort( ascending ); 
+                        this.setChildren(); 
+                }, 
+                descending : function( index ){ // 내림차순
+                        this.checkIndex( index ); 
+                        var _self = this; 
+                        var order = this.order; 
+                        var descending = function( a, b ){ 
+                                var a = _self.getText( a ); 
+                                var b = _self.getText( b ); 
+                                return order.descending( a, b ); 
+                        }; 
+                        this.array.sort( descending ); 
+                        this.setChildren(); 
+                } 
+        }; 
+        return replace; 
+} 
+
+function getTextByClone( tag ){  
+        var clone = tag.cloneNode( true ); // 태그의 복사본 만들기. 
+        var br = clone.getElementsByTagName( "br" ); 
+        while ( br[0] ){ 
+                var blank = document.createTextNode( " " ); 
+                clone.insertBefore( blank , br[0] ); 
+                clone.removeChild( br[0] ); 
+        } 
+        var isBlock = function( tag ){ 
+                var display = ""; 
+                if ( window.getComputedStyle ) display = window.getComputedStyle ( tag, "" )[ "display" ]; 
+                else display = tag.currentStyle[ "display" ]; 
+                return ( display == "block" ) ? true : false; 
+        }; 
+        var children = clone.getElementsByTagName( "*" ); 
+        for ( var x = 0; x < children.length; x++){ 
+                var child = children[ x ]; 
+                if ( ! ("value" in child) && isBlock(child) ) child.innerHTML = child.innerHTML + " "; 
+        } 
+        var textContent = ( "textContent" in clone ) ? clone.textContent : clone.innerText; 
+        return textContent; 
+} 
+</script>
+<style>
+  table {
+	border: 3px solid black ;
+	text-align : center ;
+        border-collapse: collapse;
+    padding: 5px;
+margin: auto;
+  }
+  th, td {
+    border: 1px solid black;
+        border-collapse: collapse;
+    padding: 5px;
+  }
+  th {
+    background-color: #e2e2e2;
+        font-weight: 600;
+  }
+  td {
+        font-weight: 600;
+  }
+nav {
+  display: center;
+  flex-direction: row;
+  justify-content: space-between;
+}
+ 
+</style>
         <nav id="topMenu">
                 <ul>
-                        <li><a class="menuLink">다이아계산기</a></li>
-		<li><a class="menuLink" href="https://dakitmusic.github.io/kr-es-calc/5star.html">5성 카드 스탯(업데이트중)</a></li>
+                        <li><a class="menuLink" href="https://dakitmusic.github.io/kr-es-calc/music.html">다이아계산기</a></li>
+		<li><a class="menuLink">5성 카드 스탯</a></li>
                 </ul>
         </nav>
-        </nav>
-        <div class="card">
-            <h4 class="card-header" data-translate="INPUT">輸入資料</h4>
-            <div class="card-body">
-                <div class="blocks">
-                    <div class="setting-block" id="event_type">
-                        <div class="card-body collapse" id="event_type_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="0" data-translate="NEW_SONG_EVENT">新團曲活動／混搭活動</option>
-                                    <option value="1" data-translate="TOUR_EVENT">公演活動</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#event_type_input">
-                            <span class="title" data-translate="EVENT_TYPE">活動種類</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="login_bonus">
-                        <div class="card-body collapse" id="login_bonus_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="0" data-translate="BONUS_ORDINARY">否</option>
-                                    <option value="1" data-translate="BONUS_EXTRA">是</option>
-                                    <option value="2" data-translate="BONUS_HALF_ANNIV">是</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#login_bonus_input">
-                            <span class="title" data-translate="LOGIN_BONUS_MODE">登入獎勵模式</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_time">
-                        <div class="card-body collapse" id="now_time_input">
-                            <div class="form-group">
-                                <input required class="form-control" pattern="\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{4}">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_time_input">
-                            <span class="title" data-translate="NOW_TIME">現在時間</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="end_time">
-                        <div class="card-body collapse" id="end_time_input">
-                            <div class="form-group">
-                                <input required class="form-control" pattern="\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}[+-]\d{4}">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#end_time_input">
-                            <span class="title" data-translate="END_TIME">結束時間</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_score">
-                        <div class="card-body collapse" id="now_score_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="2147480000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_score_input">
-                            <span class="title" data-translate="NOW_SCORE">現在活動分數</span>
-                            <span class="value" data-format="{,} pt"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="target_score">
-                        <div class="card-body collapse" id="target_score_input">
-                            <div class="form-group">
-                                <input required type="number" min="10000" max="2147480000" step="10000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#target_score_input">
-                            <span class="title" data-translate="TARGET_SCORE">目標活動分數</span>
-                            <span class="value" data-format="{,} pt"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="normal_score">
-                        <div class="card-body collapse" id="normal_score_input">
-                            <div class="form-group">
-                                <input required type="number" min="1" max="5000000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#normal_score_input">
-                            <span class="title" data-translate="NORMAL_SCORE">普通曲分數</span>
-                            <span class="value" data-format="{,}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="special_score">
-                        <div class="card-body collapse" id="special_score_input">
-                            <div class="form-group">
-                                <input required type="number" min="1" max="5000000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#special_score_input">
-                            <span class="title" data-translate="SPECIAL_SCORE">活動曲分數</span>
-                            <span class="value" data-format="{,}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="use_bp_1">
-                        <div class="card-body collapse" id="use_bp_1_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="1">1 BP</option>
-                                    <option value="2">2 BP</option>
-                                    <option value="3">3 BP</option>
-                                    <option value="6">6 BP</option>
-                                    <option value="10">10 BP</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#use_bp_1_input">
-                            <span class="title" data-translate="USE_BP_1">使用BP</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="use_bp_2">
-                        <div class="card-body collapse" id="use_bp_2_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="3">3 BP</option>
-                                    <option value="6">6 BP</option>
-                                    <option value="10">10 BP</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#use_bp_2_input">
-                            <span class="title" data-translate="USE_BP_2">使用BP (第4首)</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="use_pass">
-                        <div class="card-body collapse" id="use_pass_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="100">100</option>
-                                    <option value="500">500</option>
-                                    <option value="1000">1,000</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#use_pass_input">
-                            <span class="title" data-translate="USE_PASS">使用挑戰券</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="fever">
-                        <div class="card-body collapse" id="fever_input">
-                            <div class="form-group">
-                                <input required type="number" min="60" max="110" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#fever_input">
-                            <span class="title" data-translate="FEVER_BONUS">FEVER加成</span>
-                            <span class="value" data-format="{,0} %"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="bonus">
-                        <div class="card-body collapse" id="bonus_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="210" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#bonus_input">
-                            <span class="title" data-translate="BONUS">特效加成</span>
-                            <span class="value" data-format="{,0} %"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_whistles">
-                        <div class="card-body collapse" id="now_whistles_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="999" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_whistles_input">
-                            <span class="title" data-translate="NOW_WHISTLES">現在哨子數</span>
-                            <span class="value" data-format="{,0}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_megaphones">
-                        <div class="card-body collapse" id="now_megaphones_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="99" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_megaphones_input">
-                            <span class="title" data-translate="NOW_MEGAPHONES">現在揚聲器數</span>
-                            <span class="value" data-format="{,0}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_pass">
-                        <div class="card-body collapse" id="now_pass_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="1000000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_pass_input">
-                            <span class="title" data-translate="NOW_PASS">現在挑戰券數</span>
-                            <span class="value" data-format="{,0}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="sleep_time">
-                        <div class="card-body collapse" id="sleep_time_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="24" step="0.5" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#sleep_time_input">
-                            <span class="title" data-translate="SLEEP_TIME">睡眠時間</span>
-                            <span class="value" data-format="translate:HOURS"></span>
-                        </h6>
-                    </div>
-                </div>
-                <div class="form-group"></div>
-                <div class="form-group">
-                    <input type="checkbox" id="details">
-                    <label for="details" data-translate="DETAILS">進階參數</label>
-                </div>
-                <div class="blocks" id="detail_data">
-                    <div class="setting-block" id="now_bp">
-                        <div class="card-body collapse" id="now_bp_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="20" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_bp_input">
-                            <span class="title" data-translate="NOW_BP">現在BP</span>
-                            <span class="value" data-format="{} BP"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_ticket">
-                        <div class="card-body collapse" id="now_ticket_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="22" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_ticket_input">
-                            <span class="title" data-translate="NOW_TICKET">現在工作券數</span>
-                            <span class="value" data-format="{}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="now_bells">
-                        <div class="card-body collapse" id="now_bells_input">
-                            <div class="form-group">
-                                <input required type="number" min="0" max="10000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#now_bells_input">
-                            <span class="title" data-translate="NOW_BELLS">現在搖鈴數</span>
-                            <span class="value" data-format="{,0}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="user_rank">
-                        <div class="card-body collapse" id="user_rank_input">
-                            <div class="form-group">
-                                <input required type="number" min="1" max="1000" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#user_rank_input">
-                            <span class="title" data-translate="USER_RANK">玩家等級</span>
-                            <span class="value" data-format="RANK {}"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="remaining_exp">
-                        <div class="card-body collapse" id="remaining_exp_input">
-                            <div class="form-group">
-                                <input required type="number" min="10" max="102500" step="10" class="form-control">
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#remaining_exp_input">
-                            <span class="title" data-translate="REMAINING_EXP">尚餘經驗值</span>
-                            <span class="value" data-format="{,0} EXP"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="ticket_limit">
-                        <div class="card-body collapse" id="ticket_limit_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="3">3</option>
-                                    <option value="5">5</option>
-                                    <option value="8">8</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#ticket_limit_input">
-                            <span class="title" data-translate="TICKET_LIMIT">工作券回復速度</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="ticket_speed">
-                        <div class="card-body collapse" id="ticket_speed_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="43" data-translate="43_MIN">43</option>
-                                    <option value="45" data-translate="45_MIN">45</option>
-                                    <option value="50" data-translate="50_MIN">50</option>
-                                    <option value="53" data-translate="53_MIN">53</option>
-                                    <option value="56" data-translate="56_MIN">56</option>
-                                    <option value="60" data-translate="60_MIN">60</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#ticket_speed_input">
-                            <span class="title" data-translate="TICKET_SPEED">工作券回復速度</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="is_event_work">
-                        <div class="card-body collapse" id="is_event_work_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="0" data-translate="NO">否</option>
-                                    <option value="1" data-translate="YES">是</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#is_event_work_input">
-                            <span class="title" data-translate="IS_EVENT_WORK">是否活動工作</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="percentile">
-                        <div class="card-body collapse" id="percentile_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="-1" data-translate="DONT_CALCULATE">不作計算</option>
-                                    <option value="0" data-translate="LIMIT">天井</option>
-                                    <option value="1">99.9%</option>
-                                    <option value="2">99%</option>
-                                    <option value="3">95%</option>
-                                    <option value="4">90%</option>
-                                    <option value="5">75%</option>
-                                    <option value="6">50%</option>
-                                    <option value="7">25%</option>
-                                    <option value="8">10%</option>
-                                    <option value="9">5%</option>
-                                    <option value="10">1%</option>
-                                    <option value="11">0.1%</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#percentile_input">
-                            <span class="title" data-translate="GACHA_PERCENTILE">所需卡池抽數機率</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                </div>
-                <div class="form-group"></div>
-                <button type="button" class="btn btn-primary" id="calculate" data-translate="CALCULATE">計算</button>
-            </div>
-        </div>
-        <div class="card">
-            <h4 class="card-header" data-translate="CALCULATION_RESULT">計算結果</h4>
-            <div class="card-body" id="results">
-            </div>
-        </div>
-        <div class="card" id="comparison">
-            <h4 class="card-header" data-translate="PARAMETER_COMPARISON">參數比較</h4>
-            <div class="card-body">
-                <div class="blocks">
-                    <div class="setting-block" id="param1">
-                        <div class="card-body collapse" id="param1_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="nowPt" data-translate="NOW_SCORE"></option>
-                                    <option value="targetPt" data-translate="TARGET_SCORE"></option>
-                                    <option value="score1" data-translate="NORMAL_SCORE"></option>
-                                    <option value="score2" data-translate="SPECIAL_SCORE"></option>
-                                    <option value="bp1" data-translate="USE_BP_1"></option>
-                                    <option value="bp2" data-translate="USE_BP_2"></option>
-                                    <option value="bonus" data-translate="BONUS"></option>
-                                    <option value="fever" data-translate="FEVER_BONUS"></option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#param1_input">
-                            <span class="title" data-translate="PARAMETER_1">主要參數</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                    <div class="setting-block" id="param2">
-                        <div class="card-body collapse" id="param2_input">
-                            <div class="form-group">
-                                <select required class="form-control">
-                                    <option value="nowPt" data-translate="NOW_SCORE"></option>
-                                    <option value="targetPt" data-translate="TARGET_SCORE"></option>
-                                    <option value="score1" data-translate="NORMAL_SCORE"></option>
-                                    <option value="score2" data-translate="SPECIAL_SCORE"></option>
-                                    <option value="bp1" data-translate="USE_BP_1"></option>
-                                    <option value="bp2" data-translate="USE_BP_2"></option>
-                                    <option value="bonus" data-translate="BONUS"></option>
-                                    <option value="fever" data-translate="FEVER_BONUS"></option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
-                        </div>
-                        <h6 class="card-header" data-toggle="collapse" data-target="#param2_input">
-                            <span class="title" data-translate="PARAMETER_2">次要參數</span>
-                            <span class="value"></span>
-                        </h6>
-                    </div>
-                </div>
-                <div class="form-group"></div>
-                <canvas id="graph">
-                
-                </canvas>
-                <div class="form-group"></div>
-                <div class="scrollable-table">
-                    <div class="left-top">
-                        <div class="primary"></div>
-                        <div class="secondary"></div>
-                    </div>
-                    <div class="right-top"></div>
-                    <div class="left-bottom"></div>
-                    <div class="right-bottom"></div>
-                </div>
-            </div>
-        </div>
-        <script>
-        $("*[data-translate]").each(function() {
-            this.innerText = this.dataset.translate.translate(lang, dictionary);
-        });
-        initMusic();
-        </script>
-    </body>
+
+<table id="5_stat" align="left">
+  <thead>
+    <tr>
+     <th nowrap> 카 드 명 </th>
+     <th nowrap> 일러스트 </th>
+     <th nowrap> 일러스트 </th>
+     <th nowrap> 속성 </br> <button onclick="sortTD ( 3 )">▲</button><button onclick="reverseTD ( 3 )">▼</button></th>
+     <th nowrap> max Da </br> <button onclick="sortTD ( 4 )">▲</button><button onclick="reverseTD ( 4 )">▼</button></th>
+     <th nowrap> max Vo </br> <button onclick="sortTD ( 5 )">▲</button><button onclick="reverseTD ( 5 )">▼</button></th>
+     <th nowrap> max Pf </br> <button onclick="sortTD ( 6 )">▲</button><button onclick="reverseTD ( 6 )">▼</button></th>
+     <th nowrap> 종합치 </br> <button onclick="sortTD ( 7 )">▲</button><button onclick="reverseTD ( 7 )">▼</button></th>
+     <th nowrap> max Da </br> <button onclick="sortTD ( 8 )">▲</button><button onclick="reverseTD ( 8 )">▼</button></th>
+     <th nowrap> max Pf </br> <button onclick="sortTD ( 9 )">▲</button><button onclick="reverseTD ( 9 )">▼</button></th>
+     <th nowrap> max Vo </br> <button onclick="sortTD ( 10 )">▲</button><button onclick="reverseTD ( 10 )">▼</button></th>
+     <th nowrap> 종합치 </br> <button onclick="sortTD ( 11 )">▲</button><button onclick="reverseTD ( 11 )">▼</button></th>
+     <th nowrap> 출시일 </th>
+    </tr>
+  </thead>
+  <tbody>
+	<tr bgcolor=#add8e6>
+		<td nowrap> [거짓 지휘관] 사에구사 이바라 </td>
+		<td> <img src="5star/[거짓 지휘관] 사에구사 이바라.png" width=120 height=160> </td>
+		<td> <img src="5star/[거짓 지휘관] 사에구사 이바라(개화).png" width=120 height=160> </td>
+		<td> brilliant </td>
+		<td> 19,694 </td>
+		<td> 43,480 </td>
+		<td> 24,189 </td>
+		<td> 87,363 </td>
+		<td> 29,019 </td>
+		<td> 60,319 </td>
+		<td> 31,601 </td>
+		<td> 120,939 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#add8e6>
+		<td nowrap> [고양이와 기사] 사쿠마 리츠 </td>
+		<td> <img src="5star/[고양이와 기사] 사쿠마 리츠.jpg" width=120 height=160> </td>
+		<td> <img src="5star/[고양이와 기사] 사쿠마 리츠(개화).jpg" width=120 height=160> </td>
+		<td> brilliant </td>
+		<td> 19,320 </td>
+		<td> 44,711 </td>
+		<td> 19,519 </td>
+		<td> 83,550 </td>
+		<td> 24,180 </td>
+		<td> 64,194 </td>
+		<td> 25,953 </td>
+		<td> 114,255 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#fffacd>
+		<td nowrap> [긍정적인 AtoZ] 모리사와 치아키 </td>
+		<td> <img src="5star/[긍정적인 AtoZ] 모리사와 치아키.jpg" width=120 height=160> </td>
+		<td> <img src="5star/[긍정적인 AtoZ] 모리사와 치아키(개화).jpg" width=120 height=160> </td>
+		<td> flash </td>
+		<td> 22,610 </td>
+		<td> 45,541 </td>
+		<td> 20,943 </td>
+		<td> 89,094 </td>
+		<td> 30,347 </td>
+		<td> 62,741 </td>
+		<td> 24,821 </td>
+		<td> 117,909 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#fffacd>
+		<td nowrap> [부지런한 허니비]오우카와 코하쿠 </td>
+		<td> <img src="5star/[부지런한 허니비]오우카와 코하쿠.png" width=120 height=160> </td>
+		<td> <img src="5star/[부지런한 허니비]오우카와 코하쿠(개화).png" width=120 height=160> </td>
+		<td> flash </td>
+		<td> 19,694 </td>
+		<td> 43,480 </td>
+		<td> 24,189 </td>
+		<td> 84,711 </td>
+		<td> 63,256 </td>
+		<td> 25,483 </td>
+		<td> 27,124 </td>
+		<td> 115,863 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#fffacd>
+		<td nowrap> [섬광의 광주 늑대] 오오가미 코가 </td>
+		<td> <img src="5star/[섬광의 광주 늑대] 오오가미 코가.png" width=120 height=160> </td>
+		<td> <img src="5star/[섬광의 광주 늑대] 오오가미 코가(개화).png" width=120 height=160> </td>
+		<td> flash </td>
+		<td> 19,694 </td>
+		<td> 43,480 </td>
+		<td> 24,189 </td>
+		<td> 00,000 </td>
+		<td> 00,000 </td>
+		<td> 00,000 </td>
+		<td> 00,000 </td>
+		<td> 00,000 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#fffacd>
+		<td nowrap> [신인의 무대] 아케호시 스바루 </td>
+		<td> <img src="5star/[신인의 무대] 아케호시 스바루.jpg" width=120 height=160> </td>
+		<td> <img src="5star/[신인의 무대] 아케호시 스바루(개화).jpg" width=120 height=160> </td>
+		<td> flash </td>
+		<td> 19,694 </td>
+		<td> 43,480 </td>
+		<td> 24,189 </td>
+		<td> 89,379 </td>
+		<td> 65,344 </td>
+		<td> 24,239 </td>
+		<td> 28,464 </td>
+		<td> 118,047 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#bdecb6>
+		<td nowrap> [어둠 속의 너] 카게히라 미카 </td>
+		<td> <img src="5star/[어둠 속의 너] 카게히라 미카.jpg" width=120 height=160> </td>
+		<td> <img src="5star/[어둠 속의 너] 카게히라 미카(개화).jpg" width=120 height=160> </td>
+		<td> glitter </td>
+		<td> 24,565 </td>
+		<td> 23,841 </td>
+		<td> 44,269 </td>
+		<td> 92,675 </td>
+		<td> 35,495 </td>
+		<td> 30,066 </td>
+		<td> 59,156 </td>
+		<td> 124,717 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#add8e6>
+		<td nowrap> [전진의 모터쇼]아마기 히이로 </td>
+		<td> <img src="5star/[전진의 모터쇼]아마기 히이로.png" width=120 height=160> </td>
+		<td> <img src="5star/[전진의 모터쇼]아마기 히이로.png" width=120 height=160> </td>
+		<td> brilliant </td>
+		<td> 23,369 </td>
+		<td> 46,518 </td>
+		<td> 21,086 </td>
+		<td> 90,973 </td>
+		<td> 32,953 </td>
+		<td> 62,685 </td>
+		<td> 24,811 </td>
+		<td> 119,705 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#fbceb1>
+		<td nowrap> [정밀의 기도] 카제하야 타츠미 </td>
+		<td> <img src="5star/[정밀의 기도] 카제하야 타츠미.jpg" width=120 height=160> </td>
+		<td> <img src="5star/[정밀의 기도] 카제하야 타츠미(개화).jpg" width=120 height=160> </td>
+		<td> sparkle </td>
+		<td> 44,228 </td>
+		<td> 20,666 </td>
+		<td> 28,230 </td>
+		<td> 93,124 </td>
+		<td> 60,038 </td>
+		<td> 27,454 </td>
+		<td> 36,772 </td>
+		<td> 124,264 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#fbceb1>
+		<td nowrap> [정의의 모터쇼] 나구모 테토라 </td>
+		<td> <img src="5star/[정의의 모터쇼] 나구모 테토라.png" width=120 height=160> </td>
+		<td> <img src="5star/[정의의 모터쇼] 나구모 테토라(개화).png" width=120 height=160> </td>
+		<td> sparkle </td>
+		<td> 47,189 </td>
+		<td> 21,147 </td>
+		<td> 23,364 </td>
+		<td> 91,700 </td>
+		<td> 63,094 </td>
+		<td> 25,637 </td>
+		<td> 31,889 </td>
+		<td> 120,620 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+	</tr>
+	<tr bgcolor=#bdecb6>
+		<td nowrap> [당혹스러운 AtoZ] 하카제 카오루 </td>
+		<td> <img src="5star/[당혹스러운 AtoZ] 하카제 카오루.jpg" width=120 height=160> </td>
+		<td> <img src="5star/[당혹스러운 AtoZ] 하카제 카오루(개화).jpg" width=120 height=160> </td>
+		<td> glitter </td>
+		<td> 25,832 </td>
+		<td> 23,730 </td>
+		<td> 45,849 </td>
+		<td> 95,411 </td>
+		<td> 31,054 </td>
+		<td> 31,101 </td>
+		<td> 61,499 </td>
+		<td> 123,654 </td>
+		<td nowrap> 2021/01/17 </br> 피쳐 스카우트 이바라편 </td>
+  </tbody>
+</table>
+
+
+<script type="text/javascript">
+var myTable = document.getElementById( "5_stat" ); 
+var replace = replacement( myTable ); 
+function sortTD( index ){    replace.ascending( index );    } 
+function reverseTD( index ){    replace.descending( index );    } 
+</script>
+
 </html>
