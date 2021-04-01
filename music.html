@@ -45,27 +45,26 @@ body {
         <nav id="topMenu">
                 <ul>
                         <li><a class="menuLink">다이아계산기</a></li>
-		<li><a class="menuLink" href="https://dakitmusic.github.io/kr-es-calc/5star.html">5성 카드 스탯</a></li>
                 </ul>
         </nav>
         </nav>
         <div class="card">
-            <h4 class="card-header" data-translate="INPUT">輸入資料</h4>
+            <h4 class="card-header" data-translate="INPUT">파라미터 입력</h4>
             <div class="card-body">
                 <div class="blocks">
                     <div class="setting-block" id="event_type">
                         <div class="card-body collapse" id="event_type_input">
                             <div class="form-group">
                                 <select required class="form-control">
-                                    <option value="0" data-translate="NEW_SONG_EVENT">新團曲活動／混搭活動</option>
-                                    <option value="1" data-translate="TOUR_EVENT">公演活動</option>
+                                    <option value="0" data-translate="NEW_SONG_EVENT">신곡／셔플</option>
+                                    <option value="1" data-translate="TOUR_EVENT">투어</option>
                                 </select>
                             </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
+                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">확인</button>
+                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">초기화</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#event_type_input">
-                            <span class="title" data-translate="EVENT_TYPE">活動種類</span>
+                            <span class="title" data-translate="EVENT_TYPE">이벤트 타입</span>
                             <span class="value"></span>
                         </h6>
                     </div>
@@ -78,11 +77,11 @@ body {
                                     <option value="2" data-translate="BONUS_HALF_ANNIV">是</option>
                                 </select>
                             </div>
-                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">確定</button>
-                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
+                            <button type="button" class="btn btn-secondary confirm" data-translate="CONFIRM">확인</button>
+                            <button type="button" class="btn btn-secondary reset" data-translate="RESET">리셋</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#login_bonus_input">
-                            <span class="title" data-translate="LOGIN_BONUS_MODE">登入獎勵模式</span>
+                            <span class="title" data-translate="LOGIN_BONUS_MODE">로그인 보너스 타입</span>
                             <span class="value"></span>
                         </h6>
                     </div>
@@ -95,7 +94,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#now_time_input">
-                            <span class="title" data-translate="NOW_TIME">現在時間</span>
+                            <span class="title" data-translate="NOW_TIME">현재일시</span>
                             <span class="value"></span>
                         </h6>
                     </div>
@@ -108,7 +107,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#end_time_input">
-                            <span class="title" data-translate="END_TIME">結束時間</span>
+                            <span class="title" data-translate="END_TIME">종료일시</span>
                             <span class="value"></span>
                         </h6>
                     </div>
@@ -121,7 +120,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#now_score_input">
-                            <span class="title" data-translate="NOW_SCORE">現在活動分數</span>
+                            <span class="title" data-translate="NOW_SCORE">현재 이벤트 pt</span>
                             <span class="value" data-format="{,} pt"></span>
                         </h6>
                     </div>
@@ -134,7 +133,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#target_score_input">
-                            <span class="title" data-translate="TARGET_SCORE">目標活動分數</span>
+                            <span class="title" data-translate="TARGET_SCORE">목표 이벤트 pt</span>
                             <span class="value" data-format="{,} pt"></span>
                         </h6>
                     </div>
@@ -147,7 +146,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#normal_score_input">
-                            <span class="title" data-translate="NORMAL_SCORE">普通曲分數</span>
+                            <span class="title" data-translate="NORMAL_SCORE">통상곡 스코어</span>
                             <span class="value" data-format="{,}"></span>
                         </h6>
                     </div>
@@ -160,7 +159,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#special_score_input">
-                            <span class="title" data-translate="SPECIAL_SCORE">活動曲分數</span>
+                            <span class="title" data-translate="SPECIAL_SCORE">BP 소모 (4번곡)</span>
                             <span class="value" data-format="{,}"></span>
                         </h6>
                     </div>
@@ -179,7 +178,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#use_bp_1_input">
-                            <span class="title" data-translate="USE_BP_1">使用BP</span>
+                            <span class="title" data-translate="USE_BP_1">BP 소모</span>
                             <span class="value"></span>
                         </h6>
                     </div>
@@ -196,7 +195,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#use_bp_2_input">
-                            <span class="title" data-translate="USE_BP_2">使用BP (第4首)</span>
+                            <span class="title" data-translate="USE_BP_2">4번곡 스코어</span>
                             <span class="value"></span>
                         </h6>
                     </div>
@@ -213,7 +212,7 @@ body {
                             <button type="button" class="btn btn-secondary reset" data-translate="RESET">重設</button>
                         </div>
                         <h6 class="card-header" data-toggle="collapse" data-target="#use_pass_input">
-                            <span class="title" data-translate="USE_PASS">使用挑戰券</span>
+                            <span class="title" data-translate="USE_PASS">이벤트PASS 소모</span>
                             <span class="value"></span>
                         </h6>
                     </div>
